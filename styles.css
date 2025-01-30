@@ -1,0 +1,26 @@
+.intention-marker {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  z-index: 999999 !important;
+  pointer-events: auto !important;
+}
+
+.input-container {
+  position: relative;
+}
+
+input {
+  width: 100%;
+  padding-right: 40px; /* Reserve space for the icon */
+}
+
+/* .intention-marker {
+  pointer-events: auto !important;
+}
+
+.intention-marker {
+  z-index: 999999; 
+} */
+
