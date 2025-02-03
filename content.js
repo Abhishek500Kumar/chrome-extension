@@ -10,11 +10,11 @@ function createIntentionMarker() {
   
   // Create an image element for the icon
   const img = document.createElement("img");
-  img.src =
-    "https://media.istockphoto.com/id/1306552437/vector/abstract-letter-b-modern-logo-icon-design-concept-creative-bright-gradient-symbol-logotype.jpg?s=612x612&w=0&k=20&c=BTl_8Li8b5DgnJ_Ii8UV_8JTdzVvkZsDCxQYXSgTCa8="; // Replace with your icon URL or local path
+  img.src = chrome.runtime.getURL("icons/my-logo.png");  // ✅ Use local image
   img.alt = "Intention Icon";
   img.style.width = "20px";
   img.style.height = "20px";
+  
 
   // Also ensure the image can receive clicks:
   img.style.pointerEvents = "auto";
@@ -27,13 +27,20 @@ function createIntentionMarker() {
   
   img.addEventListener('click', (event) => {
     console.log('Icon clicked!');
-    // For example, open your popup
-    if (typeof chrome.runtime !== 'undefined') {
-      chrome.runtime.sendMessage({ action: 'openPopup' });
+    
+    if (typeof chrome !== "undefined" && chrome.runtime) {
+        console.log("Hello are we here?");
+        chrome.runtime.sendMessage({ action: 'openPopup' }, (response) => {
+            if (chrome.runtime.lastError) {
+                console.error("Runtime error:", chrome.runtime.lastError.message);
+            } else {
+                console.log("Message sent successfully.");
+            }
+        });
     } else {
-      console.error("chrome.runtime is not available");
+        console.error("chrome.runtime is not available");
     }
-  });
+});
   
   // Append the image to the marker
   intention.appendChild(img);
@@ -166,11 +173,26 @@ window.addEventListener("load", () => {
 });
 
 // Listen for input events on all desired text fields
-document.addEventListener("input", (e) => {
-      // console.log("");
-      
-      chrome.runtime.sendMessage({
-        action: "updatedText",
-        text: e.target.value,
+document.addEventListener(
+  "input",
+  (e) => {
+    if (e.target.matches("textarea, input, [contenteditable='true']")) {
+      console.log("[Content] Detected input change:", e.target.value);
+
+      chrome.runtime.sendMessage({ action: "updatedText", text: e.target.value }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error("Runtime error:", chrome.runtime.lastError.message);
+        } else if (response && response.status) {
+          console.log("[Content] Message sent successfully:", response.status);
+        } else {
+          console.warn("[Content] No response received from background script.");
+        }
       });
-});
+    }
+  },
+  true
+);
+
+
+
+

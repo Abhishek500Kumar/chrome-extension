@@ -1,10 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "Intention Marker Extension",
+  "name": "Braided Extension",
   "version": "1.0",
-  "permissions": ["activeTab"],
+  "permissions": ["storage", "activeTab", "scripting"],
   "background": {
     "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Click to view"
   },
   "content_scripts": [
     {
@@ -12,7 +16,10 @@
       "js": ["content.js"]
     }
   ],
-  "action": {
-    "default_popup": "popup.html"
-  }
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/my-logo.png"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
