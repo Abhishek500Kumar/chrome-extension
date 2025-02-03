@@ -9,6 +9,9 @@
 .root{
   background-color: rgba(255, 255, 255, 1);
 }
+.icon-small:nth-of-type(2) {
+  cursor: pointer; /* Change the cursor to a pointer when hovering over Icon 2 */
+}
 @media (max-width: 991px) {
   .braided-plug-in {
     padding: 100px 20px 0;
