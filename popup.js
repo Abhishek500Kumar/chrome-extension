@@ -4,55 +4,111 @@ document.addEventListener("DOMContentLoaded", () => {
   const loader = createLoader();
   const gearIcon = document.getElementById("gear-icon");
   const modelDropdown = document.getElementById("model-dropdown");
+  const languageSelect = document.getElementById("language-select");
   const modelSelect = document.getElementById("model-select");
+  const closeIcon = document.querySelector(".icon-small:nth-of-type(2)"); // X icon to close popup
 
-  let currentIndex = 0;  // To track the current suggestion
-  let apiResponse = null;  // Store the API response here
+  let currentIndex = 0;
+  let apiResponse = null;
+  let enteredText = ""; // Store the entered text globally
 
-  // Get the reference to the input box
-  const inputBox = document.querySelector("#input-box"); // Assuming the input box has the ID `input-box`
-
+  // Toggle settings dropdown when gear icon is clicked
   if (gearIcon) {
     gearIcon.addEventListener("click", () => {
       modelDropdown.classList.toggle("hidden");
     });
   }
 
+  // Close the popup and reset enteredText when the "X" icon is clicked
+  if (closeIcon) {
+    closeIcon.addEventListener("click", () => {
+      enteredText = ""; // Reset entered text
+      window.close(); // Close the popup
+    });
+  }
+
+  // Load languages dynamically
+  function loadLanguages() {
+    fetch("languages.json")
+      .then(response => response.json())
+      .then(data => {
+        languageSelect.innerHTML = "";
+
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.className = "options";
+        defaultOption.textContent = "Select Language";
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        languageSelect.appendChild(defaultOption);
+
+        data.languages.forEach(language => {
+          const option = document.createElement("option");
+          option.value = language.toLowerCase();
+          option.textContent = language;
+          option.className = "options";
+          languageSelect.appendChild(option);
+        });
+      })
+      .catch(err => {
+        console.error("Error fetching languages.json:", err);
+        languageSelect.innerHTML = `<option value="" disabled>Error loading languages</option>`;
+      });
+  }
+
+  // Handle Model or Language Change
+  async function handleModelOrLanguageChange() {
+    // Close the dropdown after selection
+    modelDropdown.classList.add("hidden");
+
+    // Show loader before making API call
+    contentBox.innerHTML = "";
+    contentBox.appendChild(loader);
+
+    try {
+      apiResponse = await callGrammarCheckAPI(enteredText);
+      contentBox.innerHTML = ""; // Remove loader
+      displaySuggestion(apiResponse);
+    } catch (err) {
+      console.error("Error calling API:", err);
+      contentBox.innerHTML = "[Error fetching response]";
+    }
+  }
+
+  // Event listeners for dropdowns (close dropdown & call API)
+  modelSelect.addEventListener("change", handleModelOrLanguageChange);
+  languageSelect.addEventListener("change", handleModelOrLanguageChange);
+
+  // Load languages when the page loads
+  loadLanguages();
+
+  // Call API when the page loads
   contentBox.innerHTML = "";
   contentBox.appendChild(loader);
 
   chrome.runtime.sendMessage({ action: "getCurrentText" }, async (response) => {
-    let enteredText = response && response.text ? response.text : "";
+    enteredText = response && response.text ? response.text : "";
 
     if (!apiResponse) {
       try {
-        apiResponse = await callGrammarCheckAPI(enteredText); // Call the API only once
+        apiResponse = await callGrammarCheckAPI(enteredText);
+        contentBox.innerHTML = "";
+        displaySuggestion(apiResponse);
       } catch (err) {
         console.error("Error calling API:", err);
-        return;
+        contentBox.innerHTML = "[Error fetching response]";
       }
-    }
-
-    contentBox.innerHTML = "";
-
-    if (apiResponse && apiResponse.suggestions) {
-      displaySuggestion(apiResponse);
-    } else {
-      resultsElement.textContent = "[No response from API]";
-      contentBox.appendChild(resultsElement);
     }
   });
 
   function displaySuggestion(data) {
-    // Display the current suggestion
     resultsElement.innerHTML = `
       <h3>Suggestions:</h3>
-      <p>${data.suggestions[currentIndex]}</p>
+      <p>${data.translated_text[currentIndex]}</p>
     `;
 
-    // Create pagination controls
     const pagination = document.createElement('div');
-    pagination.classList.add('pagination-controls');  // Use a new class for pagination
+    pagination.classList.add('pagination-controls');
 
     const detailsGroup = document.createElement('div');
     detailsGroup.classList.add('details-group');
@@ -73,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
     nextIcon.alt = "Next Icon";
     nextIcon.classList.add('sub-icon');
     nextIcon.addEventListener('click', () => {
-      if (currentIndex < data.suggestions.length - 1) {
+      if (currentIndex < data.translated_text.length - 1) {
         currentIndex++;
         updateSuggestion();
       }
@@ -81,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const countText = document.createElement('div');
     countText.classList.add('count-text');
-    countText.textContent = `${currentIndex + 1}/${data.suggestions.length}`;
+    countText.textContent = `${currentIndex + 1}/${data.translated_text.length}`;
 
     detailsGroup.appendChild(prevIcon);
     detailsGroup.appendChild(countText);
@@ -90,50 +146,26 @@ document.addEventListener("DOMContentLoaded", () => {
     pagination.appendChild(detailsGroup);
     contentBox.appendChild(pagination);
     contentBox.appendChild(resultsElement);
-
-    // Handle the "Ignore" button and close icon functionality
-    const ignoreButton = document.querySelector(".button-ignore");
-    if (ignoreButton) {
-      ignoreButton.addEventListener("click", () => {
-        window.close(); // Close the popup
-      });
-    }
-
-    const icon2 = document.querySelector(".icon-small:nth-of-type(2)");
-    icon2.addEventListener("click", () => {
-      window.close(); // Close the popup when the close icon is clicked
-    });
-
-    // Apply the suggestion to the input box when "Apply" button is clicked
-    const applyButton = document.querySelector(".button-apply");
-    if (applyButton) {
-      applyButton.addEventListener("click", () => {
-        inputBox.value = data.suggestions[currentIndex];  // Set the suggestion text into the input box
-        window.close();  // Close the popup after applying
-      });
-    }
   }
 
   function updateSuggestion() {
     const data = apiResponse;
+    console.log("data", data);
+
     const countText = document.querySelector('.count-text');
-    countText.textContent = `${currentIndex + 1}/${data.suggestions.length}`;  // Update the count dynamically
+    countText.textContent = `${currentIndex + 1}/${data.translated_text.length}`;
     resultsElement.innerHTML = `
       <h3>Suggestions:</h3>
-      <p>${data.suggestions[currentIndex]}</p>
+      <p>${data.translated_text[currentIndex]}</p>
     `;
   }
 
-  /**
-   * Call your grammar-check API
-   * @param {string} content - The text content from the user
-   * @returns {Promise<any>}
-   */
   async function callGrammarCheckAPI(content) {
-    const selectedModel = document.getElementById("model-select").value;
+    const selectedModel = modelSelect.value;
+    const selectedLanguage = languageSelect.value || "english";
 
     const response = await fetch(
-      "http://127.0.0.1:5000/patient_notes_language_translate_grammarCheck",
+      "https://be.dev.braidedai.com/patient_notes_language_translate_grammarCheck",
       {
         method: "POST",
         headers: {
@@ -144,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({
           content: content,
           model: selectedModel,
-          target_language: "English"
+          target_language: selectedLanguage
         }),
       }
     );

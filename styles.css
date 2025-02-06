@@ -343,7 +343,7 @@
   position: absolute;
   right: 0;
   top: 28px; /* adjust so it sits just below the gear icon */
-  background: #fff;
+  background: #ea8e0e;
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 8px 12px;
@@ -353,8 +353,11 @@
   font-family: 'Arial', sans-serif;
   font-size: 12px;
   color: #333;
+  height: 110px;
 }
-
+.dropdown-separator {
+  height: 8px; /* Creates spacing */
+}
 /* Hidden by default — see class="hidden" usage */
 .hidden {
   display: none;
@@ -370,16 +373,33 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 4px;
-  background: #f9f9f9;
+  background: #e28f1d;
   font-family: inherit; /* match overall font */
   font-size: inherit;   /* match overall font size */
   color: inherit;       /* match overall color */
   cursor: pointer;
   outline: none;
+  height: 30px;
+  width: 131px;
+  border-radius: 7px;
+  border: 1px solid white;
+  margin-top: 4px;
+}
+#language-select{
+  background: #e28f1d;
+  height: 30px;
+  width: 131px;
+  border: 1px solid white;
+  border-radius: 7px;
+  margin-top: 4px;
+}
+.options{
+  background-color: #666363;
+  color: white;
 }
 
 #model-select:hover {
-  background: #fff; /* subtle hover effect if desired */
+  background: #e28f1d
 }
 
 
