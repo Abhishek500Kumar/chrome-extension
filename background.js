@@ -1,27 +1,37 @@
-let currentText = ""; // Ensure this stores the latest text
+let currentText = "";
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log("message.text", message, "and messtaxt", message.text);
 
-  if (message.action === "openPopup") {
-    // console.log("[Background] Received openPopup message");
+  if (message.action === "applyTranslatedText") {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      if (tabs && tabs.length > 0) {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          { action: "applyTranslatedText", translatedText: message.translatedText },
+          (response) => {
+            sendResponse(response);
+          }
+        );
+      }
+    });
+    return true;
+  }
+
+  if (message.action === "openPopup") {;
     chrome.action.openPopup();
     sendResponse({ status: "Popup opened" });
   } else if (message.action === "updatedText") {
-    // console.log("[Background] Received updatedText:", message.text);
 
     if (message.text) {
-      currentText = message.text; // Store the latest entered text
-      // console.log("[Background] Updated stored text:", currentText);
+      currentText = message.text;
     } else {
       currentText = "";
     }
 
     sendResponse({ status: "Text updated" });
   } else if (message.action === "getCurrentText") {
-    // console.log("[Background] Sending stored text:", currentText);
-    sendResponse({ text: currentText }); // Return stored text
+    sendResponse({ text: currentText });
   }
 
-  return true; // Keep message channel open
+  return true;
 });

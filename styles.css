@@ -182,6 +182,7 @@
 .button-ignore {
   color: rgba(45, 60, 90, 1);
   margin: auto 0;
+  cursor: pointer;
 }
 .details {
   display: flex;
@@ -314,4 +315,111 @@
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
+}
+
+/* Keep the group aligned horizontally */
+.icon-group {
+  display: flex;
+  align-items: center;
+  position: relative; /* so the dropdown can be absolutely positioned */
+}
+
+/* The gear icon */
+#gear-icon {
+  width: 20px;
+  height: 20px;
+  margin-left: 8px;
+  cursor: pointer;
+  /* If you want a hover effect: */
+  transition: transform 0.2s;
+}
+
+#gear-icon:hover {
+  transform: rotate(20deg);
+}
+
+/* The dropdown container */
+#model-dropdown {
+  position: absolute;
+  right: 0;
+  top: 28px; /* adjust so it sits just below the gear icon */
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+  /* match your popup's font styles */
+  font-family: 'Arial', sans-serif;
+  font-size: 12px;
+  color: #333;
+}
+
+/* Hidden by default — see class="hidden" usage */
+.hidden {
+  display: none;
+}
+
+/* The label & select inside dropdown */
+#model-dropdown label {
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+#model-select {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px;
+  background: #f9f9f9;
+  font-family: inherit; /* match overall font */
+  font-size: inherit;   /* match overall font size */
+  color: inherit;       /* match overall color */
+  cursor: pointer;
+  outline: none;
+}
+
+#model-select:hover {
+  background: #fff; /* subtle hover effect if desired */
+}
+
+
+.pagination-controls {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: auto;
+  gap: 10px; /* Space between arrows and count */
+}
+
+.details-group {
+  display: flex;
+  align-items: center;
+}
+
+.icon-count, .sub-icon {
+  width: 24px;
+  height: 24px;
+  margin: 0 10px;
+  cursor: pointer;
+}
+
+.count-text {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.count-text.visible {
+  visibility: visible; /* Make visible when there is more than one suggestion */
+}
+
+.icon-count:hover, .sub-icon:hover {
+  opacity: 0.7;
+}
+
+.pagination-controls img {
+  cursor: pointer;
 }
