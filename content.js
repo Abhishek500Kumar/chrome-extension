@@ -202,25 +202,33 @@ document.addEventListener(
   },
   true
 );
+// content.js
+
 let lastActiveField = null;
 
 document.addEventListener("focus", (event) => {
   const inputElement = event.target;
+  // Check if it's a text field, textarea, or contenteditable
   if (
     inputElement.matches(
       'textarea, input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="number"], input[type="tel"], input[type="url"], input[type="date"], input[type="time"], input[type="datetime-local"], [contenteditable="true"], .MuiInputBase-input'
     )
   ) {
+    // Store a reference to this field
     lastActiveField = inputElement;
   }
 }, true);
 
+// Listen for incoming messages from the popup (via background.js)
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "applyTranslatedText") {
+    // We got a request to insert translated text
     if (lastActiveField) {
+      // If it's a regular input/textarea
       if (lastActiveField.value !== undefined) {
         lastActiveField.value = message.translatedText;
       } 
+      // If it's contenteditable
       else if (lastActiveField.isContentEditable) {
         lastActiveField.textContent = message.translatedText;
       }

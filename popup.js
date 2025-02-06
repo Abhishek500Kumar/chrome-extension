@@ -107,12 +107,20 @@ document.addEventListener("DOMContentLoaded", () => {
     // Apply the suggestion to the input box when "Apply" button is clicked
     const applyButton = document.querySelector(".button-apply");
     if (applyButton) {
-      applyButton.addEventListener("click", () => {
-        inputBox.value = data.suggestions[currentIndex];  // Set the suggestion text into the input box
-        window.close();  // Close the popup after applying
-      });
-    }
+      applyButton.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        chrome.runtime.sendMessage({
+          action: "applyTranslatedText",
+          translatedText: data.suggestions[currentIndex]
+        },
+        (response) => {
+          console.log("Response from content script:", response);
+          // Optionally, close popup or show a "success" message
+        });
+    });
   }
+}
 
   function updateSuggestion() {
     const data = apiResponse;

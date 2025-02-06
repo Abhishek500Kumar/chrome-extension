@@ -1,8 +1,10 @@
 let currentText = "";
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+// background.js
 
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "applyTranslatedText") {
+    // Forward this message to the content script of the active tab.
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       if (tabs && tabs.length > 0) {
         chrome.tabs.sendMessage(
@@ -14,8 +16,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         );
       }
     });
-    return true;
+    return true; // Indicate async response
   }
+
 
   if (message.action === "openPopup") {;
     chrome.action.openPopup();
