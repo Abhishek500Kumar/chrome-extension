@@ -13,6 +13,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let enteredText = ""; // Store the entered text globally
 
   // Toggle settings dropdown when gear icon is clicked
+  // Get the reference to the input box
+
+  const inputBox = document.querySelector("#input-box"); // Assuming the input box has the ID `input-box`
+
   if (gearIcon) {
     gearIcon.addEventListener("click", () => {
       modelDropdown.classList.toggle("hidden");
@@ -32,29 +36,32 @@ document.addEventListener("DOMContentLoaded", () => {
     fetch("languages.json")
       .then(response => response.json())
       .then(data => {
+        // Clear out the old options (including the "Loading..." one)
         languageSelect.innerHTML = "";
-
-        const defaultOption = document.createElement("option");
-        defaultOption.value = "";
-        defaultOption.className = "options";
-        defaultOption.textContent = "Select Language";
-        defaultOption.disabled = true;
-        defaultOption.selected = true;
-        languageSelect.appendChild(defaultOption);
-
-        data.languages.forEach(language => {
+  
+        // Build new options
+        data.languages.forEach((language, index) => {
           const option = document.createElement("option");
           option.value = language.toLowerCase();
           option.textContent = language;
           option.className = "options";
+          // For the first language, auto‐select it
+          if (index === 0) {
+            option.selected = true;
+          }
           languageSelect.appendChild(option);
         });
+         // Now that the options are in place, default to the first one
+      if (languageSelect.options.length > 0) {
+        languageSelect.selectedIndex = 0; // or 1 if you keep a placeholder at index 0
+      }
       })
       .catch(err => {
         console.error("Error fetching languages.json:", err);
         languageSelect.innerHTML = `<option value="" disabled>Error loading languages</option>`;
       });
   }
+  
 
   // Handle Model or Language Change
   async function handleModelOrLanguageChange() {
@@ -67,11 +74,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       apiResponse = await callGrammarCheckAPI(enteredText);
-      contentBox.innerHTML = ""; // Remove loader
-      displaySuggestion(apiResponse);
+       contentBox.innerHTML = ""; // Remove loader
+       displaySuggestion(apiResponse);
     } catch (err) {
-      console.error("Error calling API:", err);
-      contentBox.innerHTML = "[Error fetching response]";
+       console.error("Error calling API:", err);
+       contentBox.innerHTML = "[Error fetching response]";
     }
   }
 
@@ -99,12 +106,27 @@ document.addEventListener("DOMContentLoaded", () => {
         contentBox.innerHTML = "[Error fetching response]";
       }
     }
+    contentBox.innerHTML = "";
+
+
+
+    if (apiResponse && apiResponse.suggestions) {
+
+      displaySuggestion(apiResponse);
+
+    } else {
+
+      resultsElement.textContent = "[No response from API]";
+
+      contentBox.appendChild(resultsElement);
+
+    }
   });
 
   function displaySuggestion(data) {
     resultsElement.innerHTML = `
       <h3>Suggestions:</h3>
-      <p>${data.translated_text[currentIndex]}</p>
+      <p>${data.suggestions[currentIndex]}</p>
     `;
 
     const pagination = document.createElement('div');
@@ -129,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
     nextIcon.alt = "Next Icon";
     nextIcon.classList.add('sub-icon');
     nextIcon.addEventListener('click', () => {
-      if (currentIndex < data.translated_text.length - 1) {
+      if (currentIndex < data.suggestions.length - 1) {
         currentIndex++;
         updateSuggestion();
       }
@@ -137,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const countText = document.createElement('div');
     countText.classList.add('count-text');
-    countText.textContent = `${currentIndex + 1}/${data.translated_text.length}`;
+    countText.textContent = `${currentIndex + 1}/${data.suggestions.length}`;
 
     detailsGroup.appendChild(prevIcon);
     detailsGroup.appendChild(countText);
@@ -146,17 +168,73 @@ document.addEventListener("DOMContentLoaded", () => {
     pagination.appendChild(detailsGroup);
     contentBox.appendChild(pagination);
     contentBox.appendChild(resultsElement);
+    // Handle the "Ignore" button and close icon functionality
+
+    const ignoreButton = document.querySelector(".button-ignore");
+
+    if (ignoreButton) {
+
+      ignoreButton.addEventListener("click", () => {
+
+        window.close(); // Close the popup
+
+      });
+
+    }
+
+
+
+    const icon2 = document.querySelector(".icon-small:nth-of-type(2)");
+
+    icon2.addEventListener("click", () => {
+
+      window.close(); // Close the popup when the close icon is clicked
+
+    });
+
+
+
+    // Apply the suggestion to the input box when "Apply" button is clicked
+
+    const applyButton = document.querySelector(".button-apply");
+
+    if (applyButton) {
+
+      applyButton.addEventListener("click", (e) => {
+
+        e.preventDefault();
+
+
+
+        chrome.runtime.sendMessage({
+
+          action: "applyTranslatedText",
+
+          translatedText: data.suggestions[currentIndex]
+
+        },
+
+        (response) => {
+
+          console.log("Response from content script:", response);
+
+          // Optionally, close popup or show a "success" message
+
+        });
+
+    });
   }
+}
 
   function updateSuggestion() {
     const data = apiResponse;
     console.log("data", data);
 
     const countText = document.querySelector('.count-text');
-    countText.textContent = `${currentIndex + 1}/${data.translated_text.length}`;
+    countText.textContent = `${currentIndex + 1}/${data.suggestions.length}`;
     resultsElement.innerHTML = `
       <h3>Suggestions:</h3>
-      <p>${data.translated_text[currentIndex]}</p>
+      <p>${data.suggestions[currentIndex]}</p>
     `;
   }
 
@@ -165,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectedLanguage = languageSelect.value || "english";
 
     const response = await fetch(
-      "https://be.dev.braidedai.com/patient_notes_language_translate_grammarCheck",
+      "http://127.0.0.1:5000/patient_notes_language_translate_grammarCheck",
       {
         method: "POST",
         headers: {

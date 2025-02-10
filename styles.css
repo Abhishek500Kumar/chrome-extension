@@ -334,30 +334,12 @@
   transition: transform 0.2s;
 }
 
-#gear-icon:hover {
-  transform: rotate(20deg);
-}
 
 /* The dropdown container */
-#model-dropdown {
-  position: absolute;
-  right: 0;
-  top: 28px; /* adjust so it sits just below the gear icon */
-  background: #ea8e0e;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 8px 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
-  /* match your popup's font styles */
-  font-family: 'Arial', sans-serif;
-  font-size: 12px;
-  color: #333;
-  height: 110px;
-}
 .dropdown-separator {
   height: 8px; /* Creates spacing */
 }
+
 /* Hidden by default — see class="hidden" usage */
 .hidden {
   display: none;
@@ -365,7 +347,6 @@
 
 /* The label & select inside dropdown */
 #model-dropdown label {
-  font-weight: bold;
   margin-right: 8px;
 }
 
@@ -373,7 +354,7 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 4px;
-  background: #e28f1d;
+  background: #ffffff;
   font-family: inherit; /* match overall font */
   font-size: inherit;   /* match overall font size */
   color: inherit;       /* match overall color */
@@ -385,27 +366,34 @@
   border: 1px solid white;
   margin-top: 4px;
 }
+
 #language-select{
-  background: #e28f1d;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px;
+  background: #ffffff;
+  font-family: inherit; /* match overall font */
+  font-size: inherit;   /* match overall font size */
+  color: inherit;       /* match overall color */
+  cursor: pointer;
+  outline: none;
   height: 30px;
   width: 131px;
-  border: 1px solid white;
   border-radius: 7px;
+  border: 1px solid white;
   margin-top: 4px;
-}
-.options{
-  background-color: #666363;
-  color: white;
 }
 
 #model-select:hover {
-  background: #e28f1d
+  background: white;
 }
-
+#language-select:hover {
+  background: white;
+}
 
 .pagination-controls {
   position: absolute;
-  bottom: 10px;
+  bottom: 25px;
   right: 10px;
   display: flex;
   justify-content: center;
@@ -422,13 +410,12 @@
 .icon-count, .sub-icon {
   width: 24px;
   height: 24px;
-  margin: 0 10px;
+  margin: 0 0px;
   cursor: pointer;
 }
 
 .count-text {
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 14px;
   color: #333;
 }
 
@@ -442,4 +429,193 @@
 
 .pagination-controls img {
   cursor: pointer;
+}
+
+
+/* The main dropdown container */
+#model-dropdown {
+  position: absolute;
+  right: 0;
+  top: 28px; /* Where you want it to appear below the gear icon */
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 12px 16px;
+  font-family: 'Arial', sans-serif;
+  font-size: 12px;
+  color: #333;
+  /* Important: do NOT set a fixed height here so it auto-sizes */
+  /* height: 110px; <-- remove or comment out if it exists */
+}
+
+/* The heading at the top of the dropdown */
+.settings-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Wrapper for each label + select pair */
+.dropdown-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+/* Label styling */
+.dropdown-item label {
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+/* The selects themselves */
+#model-dropdown select {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 8px;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 12px;
+  color: #333;
+  cursor: pointer;
+  outline: none;
+}
+
+/* For your dark 'options' background if you want it */
+.options {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+/* Hidden by default */
+.hidden {
+  display: none;
+}
+
+/* If you want a small hover effect on the gear icon */
+#gear-icon:hover {
+  transform: rotate(20deg);
+  transition: transform 0.2s;
+}
+
+/* Container for the floating-label style */
+.floating-select {
+  position: relative;
+  display: inline-block; 
+  margin: 16px; /* Just for demo spacing */
+  font-family: Arial, sans-serif;
+}
+
+.floating-select-language {
+  position: relative;
+  display: inline-block; 
+  margin: 16px; /* Just for demo spacing */
+  font-family: Arial, sans-serif;
+}
+
+/* Style the SELECT to look “outlined” */
+.floating-select select {
+  -webkit-appearance: none; /* Hide default arrow for Safari/Chrome if you want a custom arrow */
+  -moz-appearance: none;    /* Hide default arrow for Firefox if needed */
+  appearance: none;
+
+  width: 200px;
+  padding: 14px 12px 6px; /* top padding to make room for floating label */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  background: white;
+  cursor: pointer;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.floating-select-language select {
+  -webkit-appearance: none; /* Hide default arrow for Safari/Chrome if you want a custom arrow */
+  -moz-appearance: none;    /* Hide default arrow for Firefox if needed */
+  appearance: none;
+
+  width: 200px;
+  padding: 14px 12px 6px; /* top padding to make room for floating label */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  background: white;
+  cursor: pointer;
+  box-sizing: border-box;
+  outline: none;
+}
+
+/* Optional: custom arrow using a pseudo-element on the wrapper */
+.floating-select::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 0; 
+  height: 0; 
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #333;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.floating-select-language::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 0; 
+  height: 0; 
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #333;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+/* The floating label itself */
+.floating-label {
+  position: absolute;
+  left: 5px;
+  top: 11px;
+  font-size: 14px;
+  color: #888;
+  background: white;    /* So it doesn’t overlap the select border */
+  padding: 0 4px;       /* Tiny horizontal padding */
+  pointer-events: none; /* Don’t let clicks hit the label */
+  transition: 0.2s ease all;
+}
+.floating-label-language {
+  position: absolute;
+  left: 8px;
+  top: -2px;
+  font-size: 10px;
+  color: #888;
+  background: white;    /* So it doesn’t overlap the select border */
+  padding: 0 4px;       /* Tiny horizontal padding */
+  pointer-events: none; /* Don’t let clicks hit the label */
+  transition: 0.2s ease all;
+}
+/*
+  When user focuses or selects a valid option (non-empty value),
+  push the label up & shrink it (like Material UI).
+*/
+.floating-select select:focus + .floating-label,
+.floating-select select:valid + .floating-label {
+  top: -2px;      /* Move label above the outlined box */
+  left: 8px;
+  font-size: 10px;
+  color: #888;  /* Or whatever highlight color you like */
+}
+
+.floating-select-language select:focus + .floating-label-language,
+.floating-select-language select:valid + .floating-label-language {
+  top: -2px;      /* Move label above the outlined box */
+  left: 8px;
+  font-size: 10px;
+  color: #888;  /* Or whatever highlight color you like */
 }

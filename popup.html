@@ -14,6 +14,7 @@
           class="main-img"
         />
         <div class="icon-group">
+          <!-- Gear Icon -->
           <img
             loading="lazy"
             src="https://cdn.builder.io/api/v1/image/assets/a5693eec7fa44ce89e83005cb2520e10/cb2978050f4497e5cd9a6bef63ece86cefd44ced59ac123e3df3be035afb4ec5?apiKey=a5693eec7fa44ce89e83005cb2520e10&"
@@ -24,24 +25,28 @@
           
           <!-- The dropdown for model selection and language selection, hidden by default -->
           <div id="model-dropdown" class="hidden">
-            <!-- Model Selection -->
-            <label for="model-select">Select Model:</label>
-            <select id="model-select">
-              <option class="options" value="gpt-4o" selected>GPT-4</option>
-              <option class="options" value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-              <option class="options" value="some-other-model">Some Other Model</option>
-            </select>
-
-              <!-- Add spacing using a div -->
-            <div class="dropdown-separator"></div>
-
-            <!-- Language Selection -->
-            <label for="language-select">Select Language:</label>
-            <select id="language-select">
-              <option value="" disabled selected class="options">Loading...</option>
-            </select>
+            <h3 class="settings-title">Settings</h3>
+        
+            <!-- Container for the outlined select & label -->
+            <div class="floating-select">
+              <select id="model-select" required>
+                <!-- Empty/hidden option so the field is invalid until user picks something -->
+                <option value="gpt-4o" selected>GPT-4o</option>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                <option value="some-other-model">Some Other Model</option>
+              </select>
+              <label for="model-select" class="floating-label">Select Model</label>
+            </div>
+        
+            <div class="floating-select-language">
+              <label for="language-select" class="floating-label-language">Select Language</label>
+              <select id="language-select">
+                <!-- <option value="" disabled selected class="options">Loading...</option> -->
+              </select>
+            </div>
           </div>
-
+        
+          <!-- Second Icon -->
           <img
             loading="lazy"
             src="https://cdn.builder.io/api/v1/image/assets/a5693eec7fa44ce89e83005cb2520e10/2c489a00403edea890323e7d42685476bb4891c85c92d5c33b7e1b8a250ded65?apiKey=a5693eec7fa44ce89e83005cb2520e10&"
@@ -49,6 +54,7 @@
             class="icon-small"
           />
         </div>
+        
       </div>
 
       <img
