@@ -5,6 +5,13 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body class="root">
+     <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="screen">
+      <h2>Please Sign in</h2>
+      <button id="googleSignInButton">Sign in with Google</button>
+    </div>
+      <!-- MAIN CONTENT -->
+  <div id="main-content-screen" style="display: none;">
     <div class="content-box">
       <div class="content-header">
         <img
@@ -53,7 +60,19 @@
             alt="Icon 2"
             class="icon-small"
           />
+          <img id="profile-image" style="width:40px;height:40px;border-radius:50%;cursor:pointer;" />
+          <!-- Dropdown Menu (initially hidden) -->
+          <div id="profile-dropdown" class="hidden-dropdown">
+            <button id="logoutButton">Logout</button>
+          </div>
+          <!-- <img loading="lazy" 
+               id="profile-image" 
+               alt="Profile" 
+               style="width:24px;height:24px;border-radius:50%;"
+          /> -->
         </div>
+
+        
         
       </div>
 
@@ -77,6 +96,7 @@
         </form>
       </div>
     </div>
+  </div>  
 
     <script src="popup.js"></script>
   </body>

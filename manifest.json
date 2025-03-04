@@ -2,9 +2,16 @@
   "manifest_version": 3,
   "name": "Braided Extension",
   "version": "1.0",
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "identity" 
+  ],
   "host_permissions": [
-    "http://127.0.0.1:5000/*"
+    "http://127.0.0.1:5000/*",
+    "https://accounts.google.com/*",
+    "https://www.googleapis.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -24,5 +31,14 @@
       "resources": ["icons/my-logo.png"],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+
+  "oauth2": {
+    "client_id": "447638571326-9tasmp33u4fb5rlnp4ru20gqn39ak679.apps.googleusercontent.com",
+    "scopes": [
+      "openid",
+      "email",
+      "profile" 
+    ]
+  }
 }

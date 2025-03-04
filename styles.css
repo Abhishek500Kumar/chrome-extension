@@ -619,3 +619,41 @@
   font-size: 10px;
   color: #888;  /* Or whatever highlight color you like */
 }
+
+
+.hidden-dropdown {
+  display: none; /* Hidden by default */
+  position: absolute; 
+  top: 60px; /* Adjust as needed */
+  right: 10px; /* Adjust as needed */
+  background-color: #fff; 
+  border: 1px solid #ccc;
+  padding: 8px;
+  z-index: 999;
+}
+
+.hidden-dropdown.show {
+  display: block; /* Show when toggled */
+}
+
+.screen {
+  /* general styling if needed */
+  border-radius: 10px;
+  align-self: end;
+  z-index: 10;
+  display: flex;
+  width: 350px;
+  max-width: 100%;
+  flex-direction: column;
+  padding: 16px 0;
+  text-align-last: center;
+}
+
+#login-screen {
+  display: block; /* default is to show login screen if we don't know user status yet */
+}
+
+#main-content-screen {
+  display: none;
+}
+
