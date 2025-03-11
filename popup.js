@@ -242,12 +242,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectedModel = modelSelect.value;
     const selectedLanguage = languageSelect.value || "english";
 
-    const response = await fetch("http://127.0.0.1:5000/patient_notes_language_translate_grammarCheck", {
+    const response = await fetch(`${CONFIG.API_URL}/patient_notes_language_translate_grammarCheck`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization:
-          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTIzNDUifQ.Q_eazHvQW_QdFmv6R18-abRFhvqtn7alcL26zPdvMg4"
+          `Bearer ${CONFIG.API_KEY}`
       },
       body: JSON.stringify({
         content,
