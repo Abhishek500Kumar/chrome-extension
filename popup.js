@@ -30,6 +30,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // ─────────────────────────────────────────────────────────
   //  2) On popup load, check if user is logged in
   // ─────────────────────────────────────────────────────────
+
+  if (gearIcon) {
+    gearIcon.addEventListener("click", () => {
+      modelDropdown.classList.toggle("hidden");
+    });
+  }
+
   chrome.runtime.sendMessage({ action: "getUserProfile" }, (response) => {
     if (response && response.profile) {
       isUserLoggedIn = true;
