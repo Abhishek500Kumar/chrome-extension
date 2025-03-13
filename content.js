@@ -5,27 +5,18 @@ let timeout;
 function createLoader() {
   const loader = document.createElement("div");
   loader.classList.add("loader");
-
-  loader.style.width = "30px"; 
-  loader.style.height = "30px";
-  loader.style.border = "4px solid transparent";
-  loader.style.borderTop = "4px solid rgb(243, 141, 7)"; 
+  loader.style.width = "20px";
+  loader.style.height = "20px";
+  loader.style.border = "3px solid transparent";
+  loader.style.borderTop = "3px solid rgb(243, 141, 7)";
   loader.style.borderRadius = "50%";
-  loader.style.animation = "spin 1.5s linear infinite"; 
+  loader.style.animation = "spin 1s linear infinite";
+  loader.style.margin = "auto";
+  loader.style.position = "absolute";
+  loader.style.right = "10px"; // Adjust position
+  loader.style.top = "50%";
+  loader.style.transform = "translateY(-50%)";
   loader.style.pointerEvents = "none";
-
-  const style = document.createElement("style");
-  style.innerHTML = `
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-  `;
-  document.head.appendChild(style);
 
   return loader;
 }
@@ -175,11 +166,34 @@ window.addEventListener("load", () => {
   observeForDynamicFields();
 });
 
-document.addEventListener(
-  "input",
-  (e) => {
+document.addEventListener("input", (e) => {
     if (e.target.matches("textarea, input, [contenteditable='true']")) {
       console.log("[Content] Detected input change:", e.target.value);
+
+      const inputElement = e.target;
+    
+    // Check if loader exists; if not, create one
+    let loader = inputElement.parentElement.querySelector(".loader");
+    if (!loader) {
+      loader = createLoader();
+      inputElement.parentElement.appendChild(loader);
+    }
+
+    // Hide icon if present
+    let icon = inputElement.parentElement.querySelector(".intention-marker img");
+    if (icon) {
+      icon.style.display = "none";
+    }
+
+    // Remove any existing timeout
+    if (timeout) clearTimeout(timeout);
+
+    // Wait for 1 second, then hide loader and show the icon
+    timeout = setTimeout(() => {
+      if (loader) loader.remove();
+      if (icon) icon.style.display = "block";
+    }, 1000);
+
       // handleInputChange(e);
       chrome.runtime.sendMessage(
         { action: "updatedText", text: e.target.value },
@@ -187,14 +201,9 @@ document.addEventListener(
           if (chrome.runtime.lastError) {
             console.error("Runtime error:", chrome.runtime.lastError.message);
           } else if (response && response.status) {
-            console.log(
-              "[Content] Message sent successfully:",
-              response.status
-            );
+            console.log("[Content] Message sent successfully:", response.status);
           } else {
-            console.warn(
-              "[Content] No response received from background script."
-            );
+            console.warn("[Content] No response received from background script.");
           }
         }
       );

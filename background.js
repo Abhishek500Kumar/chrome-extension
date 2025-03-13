@@ -6,43 +6,30 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
   if (message.action === "logout") {
-    // Clear out your stored variables
-    userProfile = null;
-    accessToken = null;
-
-    // Optionally remove cached auth token from Chrome, so they must re-login
-    chrome.identity.clearAllCachedAuthTokens((callback) => {
-      // Or use removeCachedAuthToken if you prefer
+    chrome.storage.local.remove(["userProfile", "accessToken"], () => {
       sendResponse({ success: true });
     });
-
-    return true; // Make sure to keep the channel open for async
+    return true;
   }
 
   // ===================
   // 1) Sign-In Handler
   // ===================
   if (message.action === "signInWithGoogle") {
-    // This triggers the OAuth flow
     chrome.identity.getAuthToken({ interactive: true }, (token) => {
       if (chrome.runtime.lastError) {
         console.error("Error during getAuthToken:", chrome.runtime.lastError);
         sendResponse({ error: chrome.runtime.lastError.message });
         return;
       }
-      // Store token
-      accessToken = token;
-      console.log("Got access token:", token);
-
-      // Fetch user info (name, picture, etc.)
       fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
         headers: { Authorization: "Bearer " + token }
       })
         .then((r) => r.json())
         .then((profile) => {
           userProfile = profile;
-          console.log("User profile:", userProfile);
-          // Respond to popup with the user profile
+          accessToken = token;
+          chrome.storage.local.set({ userProfile, accessToken });
           sendResponse({ success: true, profile });
         })
         .catch((err) => {
@@ -57,10 +44,38 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // ===================
   // 2) Return User Profile
   // ===================
-  if (message.action === "getUserProfile") {
-    sendResponse({ profile: userProfile });
-    return true;
-  }
+// When checking user profile, refresh token if needed
+function refreshAuthToken(callback) {
+  chrome.identity.getAuthToken({ interactive: false }, (token) => {
+    if (chrome.runtime.lastError) {
+      console.error("Error refreshing token:", chrome.runtime.lastError);
+      callback(null);
+      return;
+    }
+    
+    accessToken = token;
+    chrome.storage.local.set({ accessToken });
+    callback(token);
+  });
+}
+
+
+if (message.action === "getUserProfile") {
+  chrome.storage.local.get(["userProfile"], (data) => {
+    if (data.userProfile) {
+      refreshAuthToken((newToken) => {
+        if (newToken) {
+          sendResponse({ profile: data.userProfile });
+        } else {
+          sendResponse({ profile: null }); // If token refresh fails, ask user to log in
+        }
+      });
+    } else {
+      sendResponse({ profile: null });
+    }
+  });
+  return true;
+}
 
   // ===================
   // 3) Existing Code

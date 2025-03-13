@@ -37,10 +37,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  chrome.runtime.sendMessage({ action: "getUserProfile" }, (response) => {
-    if (response && response.profile) {
-      isUserLoggedIn = true;
-      displayUserProfile(response.profile);
+  chrome.storage.local.get(["userProfile"], (data) => {
+    if (data.userProfile) {
+      displayUserProfile(data.userProfile);
       showMainScreen();
     } else {
       showLoginScreen();
@@ -241,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function callGrammarCheckAPI(content) {
     const selectedModel = modelSelect.value;
     const selectedLanguage = languageSelect.value || "english";
-
+    try {
     const response = await fetch(`${CONFIG.API_URL}/patient_notes_language_translate_grammarCheck`, {
       method: "POST",
       headers: {
@@ -259,7 +258,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-    return response.json();
+    const jsonResponse = await response.json();
+        console.log("API JSON Response:", jsonResponse);
+        return jsonResponse;
+    } catch (error) {
+        console.error("Error calling API:", error);
+        throw error;
+    }
   }
 
   // ─────────────────────────────────────────────────────────
