@@ -100,13 +100,40 @@ document.addEventListener("DOMContentLoaded", () => {
     // 6a) Load languages once
     loadLanguages();
 
+    chrome.runtime.sendMessage({ action: "pingContentScript" }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("❌ Content script not responding. It may have been unloaded.");
+      } else {
+        console.log("✅ Content script is active:", response);
+      }
+    });
+    
+
     // 6b) Retrieve the current text from the content script
     chrome.runtime.sendMessage({ action: "getCurrentText" }, async (response) => {
-      enteredText = response?.text || "";
-
-      // 6c) Now that we know user is logged in and have the text,
-      //     we do an initial grammar check
-      await updateGrammarCheck(enteredText);
+      let enteredText = response?.text || sessionStorage.getItem("lastEnteredText") || "";
+    
+      if (!enteredText.trim()) {
+        console.warn("⚠️ No text detected. Retrying fetch...");
+    
+        // Retry using fetchLatestText explicitly
+        setTimeout(() => {
+          chrome.runtime.sendMessage({ action: "fetchLatestText" }, (newResponse) => {
+            enteredText = newResponse?.text || sessionStorage.getItem("lastEnteredText") || "";
+    
+            if (!enteredText.trim()) {
+              console.error("🚨 Still no text found. Ensure you have clicked inside the input field.");
+              contentBox.innerHTML = "[No text found. Please click inside the text box and try again.]";
+              return;
+            }
+            sessionStorage.setItem("lastEnteredText", enteredText);
+            updateGrammarCheck(enteredText);
+          });
+        }, 500);
+      } else {
+        sessionStorage.setItem("lastEnteredText", enteredText);
+        updateGrammarCheck(enteredText);
+      }
     });
 
     // If the user changes model or language, re-check
@@ -270,24 +297,66 @@ document.addEventListener("DOMContentLoaded", () => {
   // ─────────────────────────────────────────────────────────
   // 11) Load languages dynamically
   // ─────────────────────────────────────────────────────────
-  function loadLanguages() {
+    function loadLanguages() {
     fetch("languages.json")
-      .then((response) => response.json())
-      .then((data) => {
-        languageSelect.innerHTML = ""; // Clear old options
-        data.languages.forEach((lang, index) => {
+      .then(response => response.json())
+      .then(data => {
+        // Clear out the old options (including the "Loading..." one)
+        languageSelect.innerHTML = "";
+  
+        // Build new options
+        data.languages.forEach((language, index) => {
           const option = document.createElement("option");
-          option.value = lang.toLowerCase();
-          option.textContent = lang;
-          if (index === 0) option.selected = true;
+          option.value = language.toLowerCase();
+          option.textContent = language;
+          option.className = "options";
+          // For the first language, auto‐select it
+          if (index === 0) {
+            option.selected = true;
+          }
           languageSelect.appendChild(option);
         });
+         // Now that the options are in place, default to the first one
+      if (languageSelect.options.length > 0) {
+        languageSelect.selectedIndex = 0; // or 1 if you keep a placeholder at index 0
+      }
       })
-      .catch((err) => {
+      .catch(err => {
         console.error("Error fetching languages.json:", err);
-        languageSelect.innerHTML = `<option disabled>Error loading languages</option>`;
+        languageSelect.innerHTML = `<option value="" disabled>Error loading languages</option>`;
       });
   }
+
+  async function handleModelOrLanguageChange() {
+    // Close the dropdown after selection
+    modelDropdown.classList.add("hidden");
+
+    // Retrieve latest text before calling API
+    enteredText = sessionStorage.getItem("lastEnteredText") || enteredText;
+
+    if (!enteredText || !enteredText.trim()) {
+      console.error("🚨 No text found when language was changed.");
+      contentBox.innerHTML = "[No text found. Please click inside the text box and try again.]";
+      return;
+    }
+
+    // Show loader before making API call
+    contentBox.innerHTML = "";
+    contentBox.appendChild(loader);
+
+    try {
+      apiResponse = await callGrammarCheckAPI(enteredText);
+       contentBox.innerHTML = ""; // Remove loader
+       displaySuggestion(apiResponse);
+    } catch (err) {
+       console.error("Error calling API:", err);
+       contentBox.innerHTML = "[Error fetching response]";
+    }
+  }
+
+  // Event listeners for dropdowns (close dropdown & call API)
+  modelSelect.addEventListener("change", handleModelOrLanguageChange);
+  languageSelect.addEventListener("change", handleModelOrLanguageChange);
 
   // ─────────────────────────────────────────────────────────
   // 12) Profile image dropdown toggle

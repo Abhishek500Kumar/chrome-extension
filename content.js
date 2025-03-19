@@ -167,28 +167,22 @@ window.addEventListener("load", () => {
 });
 
 document.addEventListener("input", (e) => {
-    if (e.target.matches("textarea, input, [contenteditable='true']")) {
+    if (e.target.matches('textarea, input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="number"], input[type="tel"], input[type="url"], input[type="date"], input[type="time"], input[type="datetime-local"], [contenteditable="true"], .MuiInputBase-input')) {
+      lastKnownText = e.target.value || e.target.textContent || "";
+      sessionStorage.setItem("lastEnteredText", lastKnownText);
+      console.log("💾 Storing last known text:", lastKnownText);
       console.log("[Content] Detected input change:", e.target.value);
-
       const inputElement = e.target;
-    
-    // Check if loader exists; if not, create one
     let loader = inputElement.parentElement.querySelector(".loader");
     if (!loader) {
       loader = createLoader();
       inputElement.parentElement.appendChild(loader);
     }
-
-    // Hide icon if present
     let icon = inputElement.parentElement.querySelector(".intention-marker img");
     if (icon) {
       icon.style.display = "none";
     }
-
-    // Remove any existing timeout
     if (timeout) clearTimeout(timeout);
-
-    // Wait for 1 second, then hide loader and show the icon
     timeout = setTimeout(() => {
       if (loader) loader.remove();
       if (icon) icon.style.display = "block";
@@ -211,7 +205,18 @@ document.addEventListener("input", (e) => {
   },
   true
 );
+
+// Save text when input loses focus
+document.addEventListener("focusout", (event) => {
+  if (event.target.matches('textarea, input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="number"], input[type="tel"], input[type="url"], input[type="date"], input[type="time"], input[type="datetime-local"], [contenteditable="true"], .MuiInputBase-input')) {
+    sessionStorage.setItem("lastEnteredText", event.target.value);
+    console.log("📌 Saving text on blur:", event.target.value);
+  }
+});
+
+
 let lastActiveField = null;
+let lastKnownText = ""; // Store last known text
 
 document.addEventListener("focus", (event) => {
   const inputElement = event.target;
@@ -225,16 +230,28 @@ document.addEventListener("focus", (event) => {
 }, true);
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "applyTranslatedText") {
-    if (lastActiveField) {
-      if (lastActiveField.value !== undefined) {
-        lastActiveField.value = message.translatedText;
-      } 
-      else if (lastActiveField.isContentEditable) {
-        lastActiveField.textContent = message.translatedText;
-      }
-    }
-    sendResponse({ status: "Text applied successfully" });
+  if (message.action === "pingContentScript") {
+    console.log("✅ Content script is running.");
+    sendResponse({ status: "Active" });
   }
-  return true;
+});
+
+
+// Function to scan all input fields for text (backup in case `lastActiveField` is lost)
+function getAllInputText() {
+  let latestText = lastActiveField ? lastActiveField.value : "";
+  if (!latestText.trim()) {
+    latestText = sessionStorage.getItem("lastEnteredText") || "";
+  }
+  return latestText;
+}
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "fetchLatestText") {
+    console.log("🔄 Fetching latest text...");
+    let latestText = getAllInputText();
+    
+    console.log("📌 Returning text:", latestText);
+    sendResponse({ text: latestText });
+  }
 });

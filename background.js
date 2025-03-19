@@ -2,6 +2,11 @@ let currentText = "";
 let userProfile = null;
 let accessToken = null;
 
+chrome.runtime.onStartup.addListener(() => {
+  console.log("Extension restarted: Resetting text memory");
+  currentText = ""; // Reset stored text when the extension restarts
+});
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
