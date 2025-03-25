@@ -35,6 +35,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           userProfile = profile;
           accessToken = token;
           chrome.storage.local.set({ userProfile, accessToken });
+          checkUserProfileData(token, userProfile);
           sendResponse({ success: true, profile });
         })
         .catch((err) => {
@@ -44,6 +45,39 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
 
     return true; // Keep sendResponse channel open (async)
+  }
+
+
+  async function checkUserProfileData(content, userinfo) {
+    //const token = modelSelect.value;
+    //const selectedLanguage = languageSelect.value || "english";
+    try {
+    const response = await fetch(`${CONFIG.API_URL}/verify_userProfile`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization:
+          `Bearer ${content}`
+      },
+      body: JSON.stringify({
+        content,
+        userinfo
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const jsonResponse = await response.json();
+        //console.log("API JSON Response:", jsonResponse);
+        braidedToken = jsonResponse.token;
+        // console.log("braidedToken:- ", braidedToken);
+        chrome.storage.local.set({ braidedToken });
+        return jsonResponse;
+    } catch (error) {
+        console.error("Error calling API:", error);
+        throw error;
+    }
   }
 
   // ===================

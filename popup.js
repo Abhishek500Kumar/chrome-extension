@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // ─────────────────────────────────────────────────────────
+  
   //  1) Global variables and references
-  // ─────────────────────────────────────────────────────────
+  
   let isUserLoggedIn = false;
   let apiResponse = null;
   let enteredText = ""; // Store the entered text globally
@@ -27,9 +27,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const loader = createLoader();
 
-  // ─────────────────────────────────────────────────────────
+  
   //  2) On popup load, check if user is logged in
-  // ─────────────────────────────────────────────────────────
+  
 
   if (gearIcon) {
     gearIcon.addEventListener("click", () => {
@@ -46,9 +46,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ─────────────────────────────────────────────────────────
+  
   //  3) Sign-In button
-  // ─────────────────────────────────────────────────────────
+  
   signInButton.addEventListener("click", () => {
     chrome.runtime.sendMessage({ action: "signInWithGoogle" }, (res) => {
       if (res && res.profile) {
@@ -61,9 +61,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // ─────────────────────────────────────────────────────────
+  
   //  4) Logout button
-  // ─────────────────────────────────────────────────────────
+  
   logoutButton.addEventListener("click", () => {
     chrome.runtime.sendMessage({ action: "logout" }, (res) => {
       if (res?.success) {
@@ -77,9 +77,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // ─────────────────────────────────────────────────────────
+  
   //  5) Screen toggles
-  // ─────────────────────────────────────────────────────────
+  
   function showLoginScreen() {
     loginScreen.style.display = "block";
     mainContentScreen.style.display = "none";
@@ -93,9 +93,9 @@ document.addEventListener("DOMContentLoaded", () => {
     initMainContent();
   }
 
-  // ─────────────────────────────────────────────────────────
+  
   //  6) Main content initialization
-  // ─────────────────────────────────────────────────────────
+  
   async function initMainContent() {
     // 6a) Load languages once
     loadLanguages();
@@ -149,9 +149,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ─────────────────────────────────────────────────────────
+  
   //  7) Central place to call grammar check
-  // ─────────────────────────────────────────────────────────
+  
   async function updateGrammarCheck(text) {
     contentBox.innerHTML = "";
     contentBox.appendChild(loader);
@@ -166,9 +166,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ─────────────────────────────────────────────────────────
+  
   //  8) Display suggestions
-  // ─────────────────────────────────────────────────────────
+  
   function displaySuggestion(data) {
     if (!data || !data.suggestions) {
       resultsElement.textContent = "[No suggestions from API]";
@@ -207,9 +207,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ─────────────────────────────────────────────────────────
+  
   //  9) Update UI for next/prev suggestion
-  // ─────────────────────────────────────────────────────────
+  
   function updateSuggestionUI(data) {
     // Clear existing
     resultsElement.innerHTML = `
@@ -261,31 +261,45 @@ document.addEventListener("DOMContentLoaded", () => {
     contentBox.appendChild(pagination);
   }
 
-  // ─────────────────────────────────────────────────────────
+  
   // 10) Call your backend grammar check
-  // ─────────────────────────────────────────────────────────
+  
   async function callGrammarCheckAPI(content) {
     const selectedModel = modelSelect.value;
     const selectedLanguage = languageSelect.value || "english";
-    try {
-    const response = await fetch(`${CONFIG.API_URL}/patient_notes_language_translate_grammarCheck`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization:
-          `Bearer ${CONFIG.API_KEY}`
-      },
-      body: JSON.stringify({
-        content,
-        model: selectedModel,
-        target_language: selectedLanguage,
-      }),
+
+    // Wait for the token to be retrieved
+    const token = await new Promise((resolve) => {
+        chrome.storage.local.get(["braidedToken"], (data) => {
+            resolve(data.braidedToken || null); // Resolve with token or null if not found
+        });
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+    if (!token) {
+        console.error("No token found in local storage.");
+        return;
     }
-    const jsonResponse = await response.json();
+
+    try {
+        console.log("Using token:", token);
+        const response = await fetch(`${CONFIG.API_URL}/patient_notes_language_translate_grammarCheck`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                content,
+                model: selectedModel,
+                target_language: selectedLanguage,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const jsonResponse = await response.json();
         console.log("API JSON Response:", jsonResponse);
         return jsonResponse;
     } catch (error) {
@@ -294,9 +308,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ─────────────────────────────────────────────────────────
+
   // 11) Load languages dynamically
-  // ─────────────────────────────────────────────────────────
+  
     function loadLanguages() {
     fetch("languages.json")
       .then(response => response.json())
@@ -358,16 +372,16 @@ document.addEventListener("DOMContentLoaded", () => {
   modelSelect.addEventListener("change", handleModelOrLanguageChange);
   languageSelect.addEventListener("change", handleModelOrLanguageChange);
 
-  // ─────────────────────────────────────────────────────────
+  
   // 12) Profile image dropdown toggle
-  // ─────────────────────────────────────────────────────────
+  
   profileImage.addEventListener("click", () => {
     profileDropdown.classList.toggle("show");
   });
 
-  // ─────────────────────────────────────────────────────────
+  
   // 13) Utility: Loader
-  // ─────────────────────────────────────────────────────────
+  
   function createLoader() {
     const loader = document.createElement("div");
     loader.classList.add("loader");
@@ -391,9 +405,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return loader;
   }
 
-  // ─────────────────────────────────────────────────────────
+  
   // 14) Utility: show user’s picture + name
-  // ─────────────────────────────────────────────────────────
+  
   function displayUserProfile(profile) {
     if (profileImage && profile.picture) {
       profileImage.src = profile.picture;
